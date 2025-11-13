@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+#java -version
+#export JAVA_HOME="/c/Program Files/Eclipse Adoptium/jre-8.0.352.8-hotspot" && export PATH="$JAVA_HOME/bin:$PATH"
+#java -version
+
+
 # resolve shell-specifics
 case "$(echo "$SHELL" | sed -E 's|/usr(/local)?||g')" in
     "/bin/zsh")
