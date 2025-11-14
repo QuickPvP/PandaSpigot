@@ -1,0 +1,90 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ItsSmile <smulelp@gmail.com>
+Date: Fri, 14 Nov 2025 04:10:37 +0100
+Subject: [PATCH] add-blockgenerateevent
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockFlowing.java b/src/main/java/net/minecraft/server/BlockFlowing.java
+index 23130ba963a7fb0024cee47a2a44006e08d06353..df891a6e13eafe34a61c8ecd277da21bb046131a 100644
+--- a/src/main/java/net/minecraft/server/BlockFlowing.java
++++ b/src/main/java/net/minecraft/server/BlockFlowing.java
+@@ -7,6 +7,7 @@ import java.util.Set;
+ 
+ // CraftBukkit start
+ import org.bukkit.block.BlockFace;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
+ import org.bukkit.event.block.BlockFromToEvent;
+ // CraftBukkit end
+ 
+@@ -113,9 +114,11 @@ public class BlockFlowing extends BlockFluids {
+             }
+             if (!event.isCancelled()) {
+             if (this.material == Material.LAVA && world.getType(blockposition.down()).getBlock().getMaterial() == Material.WATER) {
+-                world.setTypeUpdate(blockposition.down(), Blocks.STONE.getBlockData());
+-                this.fizz(world, blockposition.down());
+-                return;
++                if (!CraftEventFactory.callBlockGenerateEvent(world, blockposition.down(), Blocks.STONE)) {
++                    world.setTypeUpdate(blockposition.down(), Blocks.STONE.getBlockData());
++                    this.fizz(world, blockposition.down());
++                    return;
++                }
+             }
+ 
+             if (i >= 8) {
+diff --git a/src/main/java/net/minecraft/server/BlockFluids.java b/src/main/java/net/minecraft/server/BlockFluids.java
+index db73f5d9cc85579037c3d95509a1227946cb08d6..829d35080eef8642d65c918db438e51d4967993a 100644
+--- a/src/main/java/net/minecraft/server/BlockFluids.java
++++ b/src/main/java/net/minecraft/server/BlockFluids.java
+@@ -3,6 +3,8 @@ package net.minecraft.server;
+ import java.util.Iterator;
+ import java.util.Random;
+ 
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++
+ public abstract class BlockFluids extends Block {
+ 
+     public static final BlockStateInteger LEVEL = BlockStateInteger.of("level", 0, 15);
+@@ -149,12 +151,18 @@ public abstract class BlockFluids extends Block {
+                 Integer integer = (Integer) iblockdata.get(BlockFluids.LEVEL);
+ 
+                 if (integer.intValue() == 0) {
++                    if (CraftEventFactory.callBlockGenerateEvent(world, blockposition, Blocks.OBSIDIAN)) {
++                        return false;
++                    }
+                     world.setTypeUpdate(blockposition, Blocks.OBSIDIAN.getBlockData());
+                     this.fizz(world, blockposition);
+                     return true;
+                 }
+ 
+                 if (integer.intValue() > 0) { // PaperSpigot
++                    if (CraftEventFactory.callBlockGenerateEvent(world, blockposition, Blocks.COBBLESTONE)) {
++                        return false;
++                    }
+                     world.setTypeUpdate(blockposition, Blocks.COBBLESTONE.getBlockData());
+                     this.fizz(world, blockposition);
+                     return true;
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 2b05648ba22a47f7579f64deabbf38132350c0fe..02deacb5bec3fc98e431dccabc69a56204281ec6 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -358,6 +358,20 @@ public class CraftEventFactory {
+         return event;
+     }
+ 
++    public static boolean callBlockGenerateEvent(World world, BlockPosition position, net.minecraft.server.Block type) {
++        CraftWorld craftWorld = world.getWorld();
++        CraftServer craftServer = world.getServer();
++
++        if (craftWorld == null || craftServer == null) {
++            return false;
++        }
++
++        Block block = craftWorld.getBlockAt(position.getX(), position.getY(), position.getZ());
++        BlockGenerateEvent event = new BlockGenerateEvent(block, CraftMagicNumbers.getMaterial(type));
++        craftServer.getPluginManager().callEvent(event);
++        return event.isCancelled();
++    }
++
+     public static void handleBlockSpreadEvent(Block block, Block source, net.minecraft.server.Block type, int data) {
+         BlockState state = block.getState();
+         state.setTypeId(net.minecraft.server.Block.getId(type));

@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ItsSmile <smulelp@gmail.com>
+Date: Fri, 14 Nov 2025 04:10:37 +0100
+Subject: [PATCH] add-blockgenerateevent
+
+
+diff --git a/src/main/java/org/bukkit/event/block/BlockGenerateEvent.java b/src/main/java/org/bukkit/event/block/BlockGenerateEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..052685ca246bab2a41ea0ed63579c996e364b448
+--- /dev/null
++++ b/src/main/java/org/bukkit/event/block/BlockGenerateEvent.java
+@@ -0,0 +1,51 @@
++package org.bukkit.event.block;
++
++import org.bukkit.Material;
++import org.bukkit.block.Block;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++
++/**
++ * Called when the server tries to generate a block as part of a world process
++ * (for example lava touching water). Cancelling the event prevents the block
++ * from changing to the generated type.
++ */
++public class BlockGenerateEvent extends BlockEvent implements Cancellable {
++
++    private static final HandlerList handlers = new HandlerList();
++    private final Material material;
++    private boolean cancelled;
++
++    public BlockGenerateEvent(Block block, Material material) {
++        super(block);
++        this.material = material;
++    }
++
++    /**
++     * Gets the material the block is about to become.
++     *
++     * @return new material
++     */
++    public Material getMaterial() {
++        return material;
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return cancelled;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancelled = cancel;
++    }
++
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}
