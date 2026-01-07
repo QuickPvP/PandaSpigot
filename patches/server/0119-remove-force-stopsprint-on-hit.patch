@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ItsSmile <smulelp@gmail.com>
+Date: Mon, 5 Jan 2026 02:08:47 +0100
+Subject: [PATCH] remove-force-stopsprint-on-hit
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
+index 524ff60ada7392ec1fd803661f957c19c50b2c2e..90d7ccb2462f9c10a6717400a24edd577255b322 100644
+--- a/src/main/java/net/minecraft/server/EntityHuman.java
++++ b/src/main/java/net/minecraft/server/EntityHuman.java
+@@ -1020,7 +1020,10 @@ public abstract class EntityHuman extends EntityLiving {
+                             // PandaSpigot end
+                             this.motX *= 0.6D;
+                             this.motZ *= 0.6D;
+-                            this.setSprinting(false);
++
++                            //Quickspigot start
++                            // this.setSprinting(false);
++                            //Quickspigot end
+                         }
+ 
+                         if (entity instanceof EntityPlayer && entity.velocityChanged) {
